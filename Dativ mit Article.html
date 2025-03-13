@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dativ Quiz</title>
+    <style>
+        h1 {
+            font-family: cursive;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: #f4f4f4;
+        }
+        .container {
+            width: 50%;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .question {
+            font-size: 20px;
+            margin-bottom: 15px;
+        }
+        .options button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: none;
+            cursor: pointer;
+            background: lightblue;
+            font-size: 16px;
+            transition: 0.3s;
+        }
+        .options button.correct {
+            background: green;
+            color: white;
+        }
+        .options button.wrong {
+            background: red;
+            color: white;
+        }
+        #next-btn {
+            margin-top: 15px;
+            padding: 10px 20px;
+            background: green;
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: none;
+        }
+        #result {
+            font-size: 22px;
+            font-weight: bold;
+            color: green;
+            margin-top: 20px;
+        }
+        .input-container {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Dativ Quiz</h1>
+    <div id="quiz">
+        <p class="question" id="question">Loading question...</p>
+        <div class="options" id="options"></div>
+        <div class="input-container">
+            <label for="article">Type the article:</label>
+            <input type="text" id="article" placeholder="e.g., dem, den" />
+        </div>
+        <button id="next-btn" onclick="nextQuestion()">Next</button>
+        <p id="result"></p>
+    </div>
+</div>
+
+<script>
+    const questions = [
+        {
+            question: "Ich bin beschäftigt ____ Laptop.(der)",
+            options: ["mit", "von", "aus", "zu"],
+            correctAnswer: "mit",
+            correctArticle: "dem",
+            word: "Laptop"
+        },
+        {
+            question: "Ich habe  ____ Freund gesprochen.(der)",
+            options: ["mit", "von", "aus", "zu"],
+            correctAnswer: "mit",
+            correctArticle: "dem",
+            word: "Freund"
+        },
+        {
+            question: "Die Gruppe besteht ____ Schülern.(die)",
+            options: ["mit", "von", "zu", "aus"],
+            correctAnswer: "aus",
+            correctArticle: "den",
+            word: "Schülern"
+        },
+        {
+            question: "Wir diskutieren ____ Frau.(die)",
+            options: ["an", "mit", "aus", "bei"],
+            correctAnswer: "mit",
+            correctArticle: "der",
+            word: "Frau"
+        },
+        {
+            question: "Ich lade Sie ____ Geburtstag ein.(der)",
+            options: ["mit", "von", "aus", "zu"],
+            correctAnswer: "zu",
+            correctArticle: "dem",
+            word: "Geburtstag"
+        },
+        {
+            question: "Ich möchte mich ____ Chefin entschuldigen.(die)",
+            options: ["mit", "bei", "aus", "zu"],
+            correctAnswer: "bei",
+            correctArticle: "der"
+        },
+        {
+            question: "Ich erzähle dir  ____ Projekt.(das)",
+            options: ["von", "mit", "aus", "bei"],
+            correctAnswer: "von",
+            correctArticle: "dem"
+        },
+        {
+            question: "Er fragt ____ Ausbildung.(die)",
+            options: ["nach", "von", "aus", "zu"],
+            correctAnswer: "nach",
+            correctArticle: "der"
+        },
+        {
+            question: "Der Kuli gehört ____ Madchen(das).",
+            options: ["mit", "nach", "aus", "zu"],
+            correctAnswer: "zu",
+            correctArticle: "dem"
+        },
+        {
+            question: "Wir gratulieren Dusko ____ Geburtstag.(der)",
+            options: ["an", "mit", "zu", "bei"],
+            correctAnswer: "zu",
+            correctArticle: "dem"
+        },
+        {
+            question: "Ihr redet ____ Leuten.(die)",
+            options: ["mit", "an", "aus", "zu"],
+            correctAnswer: "mit",
+            correctArticle: "den"
+        },
+        {
+            question: "Sie nimmt ____ Besprechung teil.(die)",
+            options: ["mit", "nach", "an", "zu"],
+            correctAnswer: "an",
+            correctArticle: "der"
+        },
+        {
+            question: "Wir telefonieren ____ Frau.(die)",
+            options: ["an", "mit", "aus", "bei"],
+            correctAnswer: "mit",
+            correctArticle: "der"
+        },
+        {
+            question: "Wir träumen ____ Praktikum.(das)",
+            options: ["mit", "von", "aus", "zu"],
+            correctAnswer: "von",
+            correctArticle: "dem"
+        },
+        {
+            question: "Wir treffen uns schon täglich ____ Lehrer.(der)",
+            options: ["mit", "nach", "aus", "zu"],
+            correctAnswer: "mit",
+            correctArticle: "dem"
+        },
+        {
+            question: "Ich trenne mich  ____ alten Sachen.(die)",
+            options: ["an", "mit", "aus", "von"],
+            correctAnswer: "von",
+            correctArticle: "den"
+        },
+        {
+            question: "Wir unterhalten uns  ____ Nachbarn.(die)",
+            options: ["mit", "von", "aus", "zu"],
+            correctAnswer: "mit",
+            correctArticle: "den"
+        },
+        {
+            question: "Er hat sich ____ Freund viel verabredet.(der)",
+            options: ["mit", "nach", "aus", "zu"],
+            correctAnswer: "mit",
+            correctArticle: "dem"
+        },
+        // Add the rest of your questions here...
+    ];
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+
+    // Shuffle the questions and options
+    function shuffleArray(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]]; // Swap elements
+        }
+    }
+
+    // Shuffle questions and options
+    shuffleArray(questions);
+    questions.forEach(q => shuffleArray(q.options));
+
+    function loadQuestion() {
+        const questionElement = document.getElementById("question");
+        const optionsElement = document.getElementById("options");
+        const nextButton = document.getElementById("next-btn");
+
+        questionElement.textContent = questions[currentQuestionIndex].question;
+        optionsElement.innerHTML = "";
+
+        // Create options buttons for the preposition
+        questions[currentQuestionIndex].options.forEach(option => {
+            const button = document.createElement("button");
+            button.textContent = option;
+            button.onclick = () => {
+                // Store the preposition the user clicked
+                selectedPreposition = option;
+                validateAnswer();
+            };
+            optionsElement.appendChild(button);
+        });
+
+        nextButton.style.display = "none"; // Hide "Next" button at start
+    }
+
+    let selectedPreposition = '';
+
+    function validateAnswer() {
+    const correctAnswer = questions[currentQuestionIndex].correctAnswer;
+    const correctArticle = questions[currentQuestionIndex].correctArticle;
+    const userArticle = document.getElementById("article").value.trim().toLowerCase();
+    const word = questions[currentQuestionIndex].word; // Get the word in the question (e.g., Laptop, Freund)
+
+    if (selectedPreposition === correctAnswer && userArticle === correctArticle) {
+        // Construct the correct sentence using preposition, article, and word from the question
+        const fullSentence = questions[currentQuestionIndex].question
+            .replace("____", selectedPreposition)  // Replace preposition
+            .replace(word, `${correctArticle} ${word}`); // Insert the correct article before the word
+        document.getElementById("result").textContent = `Correct! The full phrase is: "${fullSentence}"`;
+        score++;
+        document.getElementById("next-btn").style.display = "block"; // Show "Next" button
+    } else if (userArticle !== correctArticle) {
+        document.getElementById("result").textContent = `Incorrect article. Please type the correct article: ${correctArticle}.`;
+    } else {
+        document.getElementById("result").textContent = `Incorrect preposition. Please select the correct preposition.`;
+    
+}
+
+
+    }
+
+    function nextQuestion() {
+        currentQuestionIndex++;
+        if (currentQuestionIndex < questions.length) {
+            loadQuestion();
+            document.getElementById("result").textContent = ""; // Clear the result text
+            document.getElementById("article").value = ""; // Clear the article input
+        } else {
+            // Ensure the score is capped at the total number of questions
+            if (score > questions.length) {
+                score = questions.length;  // This makes sure the score is capped at the total number of questions
+            }
+            document.getElementById("quiz").innerHTML = `<p id="result">Quiz Over! Your score: ${score}/${questions.length}</p>`;
+        }
+    }
+
+    loadQuestion();
+</script>
+
+</body>
+</html>
